@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Timer</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div id="timer">00:00</div>
+    <div class="pie-container">
+        <div class="pie"></div>
+    </div>
+    <div class="controls">
+        <div class="inputs">
+            <label>Work (min): <input type="number" id="workInput" min="1" max="180" value="20"></label>
+            <label>Break (min): <input type="number" id="breakInput" min="1" max="60" value="5"></label>
+        </div>
+        <div class="buttons">
+            <button id="startPauseBtn">Start</button>
+            <button id="resetBtn">Reset</button>
+            <button id="applyBtn">Apply</button>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
