@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fullscreen Timer</title>
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background-color: black;
+            color: white;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+
+        #timer {
+            font-size: 30vw;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            transition: color 1s linear;
+        }
+
+        /* Pie chart timer styles */
+        .pie-container {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            width: 120px;
+            height: 120px;
+            background-color: black;
+            border-radius: 50%;
+        }
+
+        .pie {
+            width: 100%;
+            height: 100%;
+            border-radius: 50%;
+            background: conic-gradient(white 0%, white 100%);
+            position: relative;
+        }
+
+        @media (max-width: 500px) {
+            #timer {
+                font-size: 50vw;
+            }
+
+            .pie-container {
+                width: 100px;
+                height: 100px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="timer">00:00</div>
+    <div class="pie-container">
+        <div class="pie"></div>
+    </div>
+
+    <script>
+        let timerElement = document.getElementById('timer');
+        let workTime = 1200;  // 50 minutes
+        let breakTime = 0;  // 10 minutes
+        let smallTimerCycle = 60;  // 10-minute cycle for the pie chart
+        let interval;
+        let pieInterval;
+        let isRunning = false;
+        let seconds = workTime;  // Start with the 50-minute timer
+        let pieSeconds = smallTimerCycle;  // Start with 10-minute pie chart timer
+        let isWorkPhase = true;
+
+        // Pie chart element
+        const pie = document.querySelector('.pie');
+
+        function updateTimerDisplay() {
+            let minutes = Math.floor(seconds / 60);
+            let remainingSeconds = seconds % 60;
+
+            timerElement.textContent =
+                String(minutes).padStart(2, '0') + ":" +
+                String(remainingSeconds).padStart(2, '0');
+
+            // Visual cue for last 1 minute of the 10-minute break timer
+            if (!isWorkPhase && seconds <= 60) {
+                timerElement.style.color = `rgb(${255 - seconds * 4}, ${seconds * 4}, 0)`;  // Gradually change from red to green
+            } else {
+                timerElement.style.color = "white";
+            }
+        }
+
+        function startTimer() {
+            interval = setInterval(() => {
+                if (seconds > 0) {
+                    seconds--;
+                    updateTimerDisplay();
+                } else {
+                    clearInterval(interval);
+                    if (isWorkPhase) {
+                        startBreakTimer();
+                    } else {
+                        restartWorkTimer();
+                    }
+                }
+            }, 1000);
+
+            pieInterval = setInterval(updatePieTimer, 1000);
+        }
+
+        function updatePieTimer() {
+            if (pieSeconds > 0) {
+                pieSeconds--;
+
+                let percentComplete = (smallTimerCycle - pieSeconds) / smallTimerCycle;
+                let rotationDegree = percentComplete * 360;
+
+                // Use conic-gradient to create the wiping effect
+                pie.style.background = `conic-gradient(white 0% ${rotationDegree}deg, black ${rotationDegree}deg 360deg)`;
+            } else {
+                pieSeconds = smallTimerCycle;  // Reset the pie timer every 10 minutes
+            }
+        }
+
+        function startBreakTimer() {
+            isWorkPhase = false;
+            seconds = breakTime;
+            pieSeconds = smallTimerCycle;  // Reset pie chart for break
+            updateTimerDisplay();
+            startTimer();
+        }
+
+        function restartWorkTimer() {
+            isWorkPhase = true;
+            seconds = workTime;
+            pieSeconds = smallTimerCycle;  // Reset pie chart for work cycle
+            updateTimerDisplay();
+            startTimer();
+        }
+
+        function toggleTimer() {
+            if (isRunning) {
+                clearInterval(interval);
+                clearInterval(pieInterval);
+                isRunning = false;
+            } else {
+                startTimer();
+                isRunning = true;
+            }
+        }
+
+        // Fullscreen mode activation and toggle timer on spacebar press
+        document.addEventListener('keydown', function(event) {
+            if (event.code === 'Space') {
+                if (!document.fullscreenElement) {
+                    document.documentElement.requestFullscreen().catch(err => {
+                        console.log(`Error attempting fullscreen: ${err.message}`);
+                    });
+                }
+                toggleTimer();
+            }
+        });
+
+        // Initial timer display setup
+        updateTimerDisplay();
+    </script>
+</body>
+</html>
